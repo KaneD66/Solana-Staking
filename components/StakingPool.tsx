@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui'
+import { useStaking } from '@/hooks/useStaking'
 
 interface StakingPoolProps {
   poolId: number
@@ -11,26 +12,9 @@ interface StakingPoolProps {
 }
 
 export default function StakingPool({ poolId, depositToken, rewardsToken }: StakingPoolProps) {
-  const { publicKey, connected } = useWallet()
+  const { walletBalance, stakedBalance, estimatedBalance, tokenBBalance, isLoading, program, stake, unstake, claimRewards } = useStaking()
+  const { connected, publicKey } = useWallet()
   const [amount, setAmount] = useState('')
-  const [walletBalance, setWalletBalance] = useState(0)
-  const [stakedBalance, setStakedBalance] = useState(0)
-  const [estimatedRewards, setEstimatedRewards] = useState(0)
-  const [isLoading, setIsLoading] = useState(false)
-
-  // Mock data - will be replaced with actual wallet/contract data
-  useEffect(() => {
-    if (connected && publicKey) {
-      // TODO: Fetch actual balances from wallet/contract
-      setWalletBalance(1000)
-      setStakedBalance(500)
-      setEstimatedRewards(25.5)
-    } else {
-      setWalletBalance(0)
-      setStakedBalance(0)
-      setEstimatedRewards(0)
-    }
-  }, [connected, publicKey])
 
   const handleAmountChange = (value: string) => {
     const numValue = parseFloat(value)
@@ -55,19 +39,11 @@ export default function StakingPool({ poolId, depositToken, rewardsToken }: Stak
     if (!amount || parseFloat(amount) <= 0) return
     if (parseFloat(amount) > walletBalance) return
 
-    setIsLoading(true)
     try {
-      // TODO: Implement actual stake transaction
-      console.log(`Staking ${amount} ${depositToken}`)
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      setStakedBalance(prev => prev + parseFloat(amount))
-      setWalletBalance(prev => prev - parseFloat(amount))
+      await stake(parseFloat(amount))
       setAmount('')
     } catch (error) {
       console.error('Stake error:', error)
-    } finally {
-      setIsLoading(false)
     }
   }
 
@@ -76,37 +52,22 @@ export default function StakingPool({ poolId, depositToken, rewardsToken }: Stak
     if (!amount || parseFloat(amount) <= 0) return
     if (parseFloat(amount) > stakedBalance) return
 
-    setIsLoading(true)
     try {
-      // TODO: Implement actual unstake transaction
-      console.log(`Unstaking ${amount} ${depositToken}`)
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      setStakedBalance(prev => prev - parseFloat(amount))
-      setWalletBalance(prev => prev + parseFloat(amount))
+      await unstake(parseFloat(amount))
       setAmount('')
     } catch (error) {
       console.error('Unstake error:', error)
-    } finally {
-      setIsLoading(false)
     }
   }
 
   const handleClaim = async () => {
     if (!connected || !publicKey) return
-    if (estimatedRewards <= 0) return
+    if (estimatedBalance <= 0) return
 
-    setIsLoading(true)
     try {
-      // TODO: Implement actual claim transaction
-      console.log(`Claiming ${estimatedRewards} ${rewardsToken}`)
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      setEstimatedRewards(0)
+      await claimRewards()
     } catch (error) {
       console.error('Claim error:', error)
-    } finally {
-      setIsLoading(false)
     }
   }
 
@@ -196,17 +157,17 @@ export default function StakingPool({ poolId, depositToken, rewardsToken }: Stak
               <div className="flex gap-3">
                 <button
                   onClick={handleStake}
-                  disabled={isLoading || !amount || parseFloat(amount) <= 0 || parseFloat(amount) > walletBalance}
+                  disabled={!amount || parseFloat(amount) <= 0 || parseFloat(amount) > walletBalance}
                   className="flex-1 px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isLoading ? 'Processing...' : 'Stake'}
+                  Stake
                 </button>
                 <button
                   onClick={handleUnstake}
-                  disabled={isLoading || !amount || parseFloat(amount) <= 0 || parseFloat(amount) > stakedBalance}
+                  disabled={!amount || parseFloat(amount) <= 0 || parseFloat(amount) > stakedBalance}
                   className="flex-1 px-6 py-3 bg-orange-600 hover:bg-orange-700 text-white font-semibold rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isLoading ? 'Processing...' : 'Unstake'}
+                  Unstake
                 </button>
               </div>
             </div>
@@ -219,15 +180,15 @@ export default function StakingPool({ poolId, depositToken, rewardsToken }: Stak
                 Estimated Rewards
               </p>
               <p className="text-2xl font-bold text-green-600 dark:text-green-400">
-                {estimatedRewards.toLocaleString(undefined, { maximumFractionDigits: 2 })} {rewardsToken.toUpperCase()}
+                {estimatedBalance.toLocaleString(undefined, { maximumFractionDigits: 2 })} {rewardsToken.toUpperCase()}
               </p>
             </div>
             <button
               onClick={handleClaim}
-              disabled={isLoading || estimatedRewards <= 0}
+              disabled={estimatedBalance <= 0}
               className="w-full px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isLoading ? 'Processing...' : `Claim ${estimatedRewards.toFixed(2)} ${rewardsToken.toUpperCase()}`}
+              Claim {estimatedBalance.toFixed(2)} {rewardsToken.toUpperCase()}
             </button>
           </div>
         </>
