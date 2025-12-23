@@ -17,22 +17,22 @@ export async function initialize(admin: web3.Signer) {
     .initialize()
     .accounts(accounts)
     .signers([admin])
-    .rpc({skipPreflight: true});
+    .rpc({ skipPreflight: true });
 
-    await program.provider.connection.confirmTransaction(tx);
+  await program.provider.connection.confirmTransaction(tx);
 }
 
 export async function createStakePool(creator: web3.Signer, mintA: web3.PublicKey, mintB: web3.PublicKey) {
-    let id = await getNextId();
-    let accounts = await getCreateStakePoolAccounts(creator.publicKey, mintA, mintB, id);
-    const tx = await program.methods
-      .createStakePool()
-      .accounts(accounts)
-      .signers([creator])
-      .rpc();
+  let id = await getNextId();
+  let accounts = await getCreateStakePoolAccounts(creator.publicKey, mintA, mintB, id);
+  const tx = await program.methods
+    .createStakePool()
+    .accounts(accounts)
+    .signers([creator])
+    .rpc();
 
-    await program.provider.connection.confirmTransaction(tx);
-    return accounts.stakePool;
+  await program.provider.connection.confirmTransaction(tx);
+  return accounts.stakePool;
 }
 
 export async function setStakePoolRewards(stakePool: web3.PublicKey, admin: web3.Signer, rewardsPerSecond: anchor.BN) {
@@ -71,16 +71,16 @@ export async function createStakeEntryIx(staker: web3.PublicKey, stakePool: web3
 }
 
 export async function stake(
-  staker: web3.Signer, 
-  mintA: web3.PublicKey, 
-  amount: anchor.BN, 
-  stakePool: web3.PublicKey, 
+  staker: web3.Signer,
+  mintA: web3.PublicKey,
+  amount: anchor.BN,
+  stakePool: web3.PublicKey,
   stakeEntry: web3.PublicKey | null = null) {
 
   if (stakeEntry == null) {
     stakeEntry = await createStakeEntry(staker, stakePool);
   }
-  
+
   let accounts = await getStakeAccounts(staker.publicKey, stakePool, mintA, program);
 
   const tx = await program.methods
@@ -95,9 +95,9 @@ export async function stake(
 }
 
 export async function createStakeIx(
-  staker: web3.PublicKey, 
-  mintA: web3.PublicKey, 
-  amount: anchor.BN, 
+  staker: web3.PublicKey,
+  mintA: web3.PublicKey,
+  amount: anchor.BN,
   stakePool: web3.PublicKey) {
 
   if (!program) {
@@ -114,9 +114,9 @@ export async function createStakeIx(
 }
 
 export async function createUnstakeIx(
-  staker: web3.PublicKey, 
-  mintA: web3.PublicKey, 
-  amount: anchor.BN, 
+  staker: web3.PublicKey,
+  mintA: web3.PublicKey,
+  amount: anchor.BN,
   stakePool: web3.PublicKey) {
 
   let accounts = await getUnstakeAccounts(staker, stakePool, mintA, program);
@@ -131,7 +131,7 @@ export async function createUnstakeIx(
 }
 
 export async function createClaimRewardsIx(
-  staker: web3.PublicKey, 
+  staker: web3.PublicKey,
   mintB: web3.PublicKey,
   stakePool: web3.PublicKey) {
 
