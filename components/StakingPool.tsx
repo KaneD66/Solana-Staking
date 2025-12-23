@@ -12,7 +12,7 @@ interface StakingPoolProps {
 }
 
 export default function StakingPool({ poolId, depositToken, rewardsToken }: StakingPoolProps) {
-  const { walletBalance, stakedBalance, estimatedBalance, tokenBBalance, isLoading, program, stake, unstake, claimRewards } = useStaking()
+  const { walletBalance, stakedBalance, estimatedBalance, tokenBBalance, apy, program, stake, unstake, claimRewards } = useStaking(poolId)
   const { connected, publicKey } = useWallet()
   const [amount, setAmount] = useState('')
 
@@ -74,9 +74,19 @@ export default function StakingPool({ poolId, depositToken, rewardsToken }: Stak
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700">
       <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-          Pool {poolId}
-        </h2>
+        <div className="flex justify-between items-start mb-2">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+            Pool {poolId}
+          </h2>
+          {apy > 0 && (
+            <div className="text-right">
+              <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">APY</div>
+              <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+                {apy.toFixed(2)}%
+              </div>
+            </div>
+          )}
+        </div>
         <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
           <span className="font-medium">Deposit:</span>
           <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded">
@@ -121,12 +131,11 @@ export default function StakingPool({ poolId, depositToken, rewardsToken }: Stak
                   onChange={(e) => handleAmountChange(e.target.value)}
                   placeholder="0.00"
                   className="flex-1 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  disabled={isLoading}
                 />
                 <button
                   onClick={setMax}
                   className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 font-medium"
-                  disabled={isLoading || walletBalance === 0}
+                  disabled={walletBalance === 0}
                 >
                   MAX
                 </button>
@@ -135,21 +144,21 @@ export default function StakingPool({ poolId, depositToken, rewardsToken }: Stak
                 <button
                   onClick={() => setPercentage(20)}
                   className="flex-1 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 font-medium transition"
-                  disabled={isLoading || walletBalance === 0}
+                  disabled={walletBalance === 0}
                 >
                   20%
                 </button>
                 <button
                   onClick={() => setPercentage(50)}
                   className="flex-1 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 font-medium transition"
-                  disabled={isLoading || walletBalance === 0}
+                  disabled={walletBalance === 0}
                 >
                   50%
                 </button>
                 <button
                   onClick={() => setPercentage(100)}
                   className="flex-1 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 font-medium transition"
-                  disabled={isLoading || walletBalance === 0}
+                  disabled={walletBalance === 0}
                 >
                   MAX
                 </button>
